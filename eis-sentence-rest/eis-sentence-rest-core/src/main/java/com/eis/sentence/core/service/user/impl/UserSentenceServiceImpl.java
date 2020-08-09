@@ -10,10 +10,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import rx.Completable;
+import rx.Observable;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * {@link UserSentenceService} implementation
@@ -34,14 +35,17 @@ public class UserSentenceServiceImpl implements UserSentenceService {
     }
 
     @Override
-    public List<UserSentenceBO> getByUserId(String userId) {
-        return userSentenceRepository.findUserSentenceByUserId(userId).stream()
-                .map(UserSentenceConverter::toUserSentenceBO).collect(Collectors.toList());
+    public Observable<UserSentenceBO> getByUserId(String userId, int page, int limit) {
+        List<UserSentence> userSentences = userSentenceRepository.findUserSentenceByUserId(userId);
+        return Observable.from(userSentences)
+            .skip(page * limit).limit(limit)
+            .map(UserSentenceConverter::toUserSentenceBO);
     }
 
     @Override
-    public void publish(String userId, String word) {
+    public Completable publish(String userId, String word) {
         producerTemplate.sendBodyAndHeader("direct:start", word, "userId", userId);
+        return Completable.complete();
     }
 
     @Override

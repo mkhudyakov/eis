@@ -2,6 +2,7 @@ package com.eis.sentence.api.controller;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import rx.Single;
 
 import static org.springframework.http.MediaType.ALL_VALUE;
 
@@ -12,7 +13,9 @@ import static org.springframework.http.MediaType.ALL_VALUE;
 public class StatusController {
 
     @GetMapping(value = "/status", consumes = ALL_VALUE, produces = ALL_VALUE)
-    public String getStatus() {
-        return "OK";
+    public Single<String> getStatus() {
+        return Single.create(singleSubscriber -> {
+            singleSubscriber.onSuccess("OK");
+        });
     }
 }
